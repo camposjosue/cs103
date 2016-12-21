@@ -1,0 +1,118 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <math.h>
+
+using namespace std;
+
+double fairness;
+
+
+
+int coin(){
+int random=rand() % 100+1;
+	if (random<= fairness*100){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+
+int main(){
+
+srand(time(0));
+int n;
+double games;
+double count=0;
+//double total_sum=0;
+
+cout << "Number of Initial Coins: ";
+cin >> n;
+cout<< "Enter Coin Fairness: ";
+cin >> fairness;
+cout << "Number of Game Simulations: ";
+cin >> games;
+cout << endl;
+
+int player_coins[3];
+//double round[games]
+
+
+//Initial coins set correctly
+//total_sum= count + total_sum;
+
+for (int j=0; j<games; j++){
+
+	for (int i=0; i<3; i++){
+	player_coins[i]=n;
+	}	
+
+	do{
+	
+		int player_face[3];
+		
+		player_face[0]=coin();
+		player_face[1]=coin();
+		player_face[2]=coin();
+
+//cout << player_face[0] << player_face[1] << player_face[2] << endl;
+
+			if(player_face[0] == 1 && player_face[1] ==0 && player_face[2] ==0){
+			player_coins[0]+=2;
+			player_coins[1]--;
+			player_coins[2]--;
+			}
+
+			else if(player_face[0] == 0 && player_face[1] ==1 && player_face[2] ==0){
+			player_coins[0]--;
+			player_coins[1]+=2;
+			player_coins[2]--;
+			}
+
+			else if(player_face[0] == 0 && player_face[1] ==0 && player_face[2] ==1){
+			player_coins[0]--;
+			player_coins[1]--;
+			player_coins[2]+=2;
+			}
+
+			else if(player_face[0] == 0 && player_face[1] ==1 && player_face[2] ==1){
+			player_coins[0]+=2;
+			player_coins[1]--;
+			player_coins[2]--;
+			}
+
+			else if(player_face[0] == 1 && player_face[1] ==0 && player_face[2] ==1){
+			player_coins[0]--;
+			player_coins[1]+=2;
+			player_coins[2]--;
+			}
+
+			else if(player_face[0] == 1 && player_face[1] ==1 && player_face[2] ==0){
+			player_coins[0]--;
+			player_coins[1]--;
+			player_coins[2]+=2;
+			}
+				count++;
+
+			}while( player_coins[0] != 0 && player_coins[1] != 0 && player_coins[2] != 0);
+
+//cout<< player_coins[0] << endl;
+//cout << player_coins[1] << endl;
+//cout << player_coins[2] << endl;
+
+			//else(player_face[0] == player_face[1] && player_face[1] == player_face[2]){}
+
+			
+	}
+	
+//round[games-1]=count;
+	
+	double average =(count/games);
+
+	cout << "The average number of rounds: " << average << endl;
+//double average=
+}
+
+

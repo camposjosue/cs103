@@ -1,0 +1,22 @@
+#include <iostream>
+using namespace std;
+
+int main(int argc, char *argv[]){
+
+//cout << argc << endl;
+
+int number;
+cout << "Input and integer any integer ";
+cin >> number;
+
+int x
+
+while(number>0){
+x = number % 10;
+cout << x
+
+
+}
+
+return 0; 
+}

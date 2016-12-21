@@ -1,0 +1,285 @@
+//Josue Campos
+#include "user.h"
+#include "network.h"
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <deque>
+
+Network::Network(){};
+
+Network::~Network(){};
+
+int Network::read_friends(char* fname){
+	int num_users;
+	string name1;
+	string name2;
+	int id;
+	int year;
+	int zip;
+	vector<int>friends;
+	int n;
+	ifstream ifile(fname); 
+	if (ifile.fail()){
+ 		cout << "could not read file"<<endl;
+ 		return -1;
+ 	} 
+
+ 	if(ifile.good()){
+ 		ifile>>num_users;
+ 		for(int i=0; i<num_users; i++){
+ 			ifile>> id;
+ 			ifile>> name1;
+ 			ifile>> name2;
+ 			string name = name1 +" "+name2;
+ 			ifile>> year;
+ 			ifile>> zip;
+ 			for(int i=0; i<1; i++){
+ 				ifile.get();
+ 			}
+ 			User temp(id, name, year, zip, friends);
+ 			while(ifile.peek() != EOF && ifile.peek()!='\n'){
+ 				ifile>>n;
+ 				temp.add_friend(n);
+ 			}	
+ 			_network.push_back(temp);
+ 		}
+ 	}
+ 	return 0;
+};
+int Network::write_friends(char *fname){
+	ofstream output (fname); 
+	output<<_network.size()<<endl;
+	for(unsigned int i=0; i<_network.size(); i++){
+		output<<_network[i].get_id()<<endl;
+		output<<'\t'<<_network[i].get_name()<<endl;
+		output<<'\t'<<_network[i].get_year()<<endl;
+		output<<'\t'<<_network[i].get_zip()<<endl;
+		output<<'\t';
+		
+		int size = _network[i].get_friends().size();
+		for(int j = 0; j<size; j++){
+			output<<_network[i].get_friends()[j];
+			if(j != size-1)
+				output << " ";
+		}
+		output<<endl;
+	}
+	output.close();
+	return 0;
+};
+
+void Network::add_user(int id, string name, int year, int zip){
+	User person= User(id, name, year, zip);
+	//cout<<_network.size()<<endl;
+	_network.push_back(person);
+	//cout<<_network.size()<<endl;
+};
+
+int Network::add_connection(int id1, int id2){
+	bool id_1;
+	bool id_2;
+	unsigned int loop = _network.size();
+	for(unsigned int i=0; i<loop; i++){
+	//cout << "looping through all users" << endl;
+		if(_network[i].get_id()==id1){
+			_network[i].add_friend(id2);
+			id_1=true;
+			//cout<<"found id1"<<endl;
+		}
+		if(_network[i].get_id()==id2){
+			_network[i].add_friend(id1);
+			id_2=true;
+			//cout<<"found id2"<<endl;
+		}
+	}
+	if(id_1 == true && id_2 == true)
+		return 0;
+	else
+		return -1;
+};
+
+int Network::remove_connection(int id1, int id2){
+	//cout << "removing connecton between " << id1 << " and " << id2<< endl;
+unsigned int loop = _network.size();
+	for(unsigned int i=0; i<loop; i++){
+	//cout << "looping through all users" << endl;
+		if(_network[i].get_id()==id1){
+			_network[i].add_friend(id2);
+			//cout<<"found id1"<<endl;
+		}
+		if(_network[i].get_id()==id2){
+			_network[i].add_friend(id1);
+			//cout<<"found id2"<<endl;
+		}
+	}
+	return 0;
+};
+
+int Network::get_id(string name1){
+	for(int i=0; i<(int)_network.size(); i++){
+		string name2 = _network[i].get_name();
+		if(name1 == name2){
+			return _network[i].get_id();
+		}
+	}
+	return -1;
+};
+
+int Network::get_network_size(){
+	return _network.size();
+};
+
+vector<int> Network::get_user_friends(int id){
+	for(int i=0; i< (int)_network.size(); i++){
+		if(_network[i].get_id()==id){
+			return _network[i].get_friends();
+		}
+	}
+	vector<int> temp;
+	temp.push_back(0);
+	return temp;
+};
+
+vector<User> Network::get_network(){
+	return _network;
+};
+
+//##########################################################################################
+vector<int> Network::shortest_path(int from, int to){
+	vector <int> trace;
+	deque <int> queue;
+	bool finished =false;
+	
+	
+	for(unsigned int i =0; i<_network.size(); i++){
+		_network[i].depth=-1;
+	}
+	queue.push_back(from);
+	_network[from].predecessor=-1;
+	_network[from].depth=0;
+	
+	
+	while(finished==false){
+		int current_id=queue.front();
+		vector<int> temp = _network[current_id].get_friends();
+		queue.pop_front();
+		for(unsigned int i=0; i<temp.size(); i++){
+			if(_network[temp[i]].depth==-1){
+				queue.push_back(_network[temp[i]].get_id());
+				_network[temp[i]].depth=0;//mystery;
+				_network[temp[i]].predecessor=current_id;
+			}
+			if( _network[temp[i]].get_id() == to){
+				finished = true;
+				break;
+				}
+		}
+			
+	}
+	int load;
+	
+	load = queue.front();
+	while(load != -1){
+	//cout<<"in the while loop"<<endl;
+		trace.push_back(load);
+		load = _network[load].predecessor;
+	}
+	cout<<"Distance: "<<trace.size()<<endl;
+	return trace;
+};
+
+
+
+///////////////////
+
+
+
+
+
+
+//###############################################################################################
+
+
+vector<vector<int> > Network::groups(){
+	int group_number=0;
+	vector<vector<int> > groups;
+
+	for(unsigned int i=0; i < _network.size(); i++){
+		_network[i].group = -1;
+	}
+	for(unsigned int i=0; i < _network.size(); i++){
+		if(_network[i].group == -1){
+			group_number++;
+			//cout << i << endl;
+			_network[i].group = group_number;
+			vector<int> group_friends=_network[i].get_friends();
+			while(!group_friends.empty()){
+				_network[group_friends[0]].group=group_number;
+				vector<int> the_group = _network[group_friends[0]].get_friends();
+				for(unsigned int j=0; j<the_group.size(); j++){
+					if(_network[the_group[j]].group == -1){
+						group_friends.push_back(the_group[j]);
+					}
+				}
+				//groups.push_back(group_friends);
+				group_friends.clear();
+			}
+		}
+	}
+	
+	for(int i=0; i<group_number; i++){
+		cout<< "set " << i <<" => ";
+		for(unsigned int j=0; j < _network.size(); j++){
+			if(_network[j].group== group_number){
+				cout<< _network[j].get_name()<< ", ";
+			}
+		}	
+	}
+	return groups;
+}
+
+
+//##############################################################################
+
+vector<int> Network::suggest_friends(int who, int& score){
+	vector<int> suggestions;
+	deque<int> queue;
+	for(unsigned int i=0; i <_network.size(); i++){
+		_network[i].depth=-1;
+		_network[i].predecessor=-1;
+		_network[i].mutual = 0;
+	}
+	_network[who].depth=0;
+	queue.push_back(who);
+	while(!queue.empty()){
+		int current_id=queue.front();
+		vector<int> temp = _network[current_id].get_friends();
+		queue.pop_front();
+		for(unsigned int i =0; i<temp.size(); i++){
+			unsigned int current_friend = temp[i];
+			if(_network[current_friend].depth == -1){
+				queue.push_back(current_friend);
+				_network[temp[i]].depth=_network[current_id].depth+1;
+				_network[temp[i]].predecessor=current_id;
+				if(_network[current_friend].depth<=2){
+					for(unsigned int j=0; j<_network[current_friend].get_friends().size(); j++){
+						if(_network[current_friend].get_friends()[j]== current_id);
+							
+						else{
+							suggestions.push_back(_network[current_friend].get_friends()[j]);
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
+
+	return suggestions;
+}
+
+
+
